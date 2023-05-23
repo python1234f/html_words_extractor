@@ -86,6 +86,9 @@ class Tag:
             self.closingTagClosed = True
         self.appendTagType = True
 
+    def __repr__(self):
+        return f"{self.tagType}"
+
 class Extractor:
 
     excluded_tags = ["script", "style"]
@@ -97,6 +100,20 @@ class Extractor:
         self.load_html()
         self.body_tag = Tag("body ")
         self.current_child_tag = None
+        self.words = {}
+
+    def add_word(self, word):
+        insert_pointer = self.words
+        for index in range(len(word)):
+            letter = word[index]
+            if letter not in insert_pointer:
+                insert_pointer[letter] = {}
+            insert_pointer = insert_pointer[letter]
+            if index == len(word) - 1:
+                if "count" not in insert_pointer:
+                    insert_pointer["count"] = 1
+                else:
+                    insert_pointer["count"] += 1
 
     def load_html(self):
         # self.html = requests.get(self.url).text
@@ -106,7 +123,6 @@ class Extractor:
     def run(self):
 
         isNotBodyTag = False
-
         tagOpen = False
 
         for index, letter in enumerate(self.html):
@@ -138,6 +154,9 @@ class Extractor:
         tagOpenIndex = None
         ignoreTagContent = False
 
+        words = {}
+        word = ""
+
         for index in range(index, len(self.html)):
             if index == 73727:
                 print(1)
@@ -156,8 +175,18 @@ class Extractor:
 
             if not tagOpen:
                 if letter == "<":
+                    if word:
+                        self.add_word(word)
+                        word = ""
                     tagOpen = True
                     tagOpenIndex = index
+                else:
+                    if letter == " ":
+                        if word:
+                            self.add_word(word)
+                            word = ""
+                    if letter.isalnum():
+                        word += letter
             else:
                 if letter == "/":
                     # we assume no nested excluded tags of same type, see notes
