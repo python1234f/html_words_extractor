@@ -78,6 +78,8 @@ class Tag:
             self.tagType += letter
         else:
             self.consideredTagType += letter
+        if self.consideredTagType == "div":
+            print(1)
 
     def close_tag(self):
         if not self.openingTagClosed:
@@ -178,6 +180,7 @@ class Extractor:
                     if word:
                         self.add_word(word)
                         word = ""
+                        someTag = Tag(None)
                     tagOpen = True
                     tagOpenIndex = index
                 else:
@@ -185,6 +188,7 @@ class Extractor:
                         if word:
                             self.add_word(word)
                             word = ""
+                            someTag = Tag(None)
                     if letter.isalnum():
                         word += letter
             else:
@@ -195,6 +199,7 @@ class Extractor:
                     # we are not dealing with a tag here
                     tagOpen = False
                     tagOpenIndex = 0
+                    someTag.appendTagType = True
                     continue
                 elif letter != ">":
 
@@ -204,6 +209,7 @@ class Extractor:
                     someTag.openingTagClosed = True
                     tagOpen = False
                     tagOpenIndex = 0
+                    someTag.appendTagType = True
 
                     if someTag.tagType in self.excluded_tags:
                         if someTag.tagType == someTag.consideredTagType:
@@ -212,6 +218,8 @@ class Extractor:
                             someTag = Tag(None)
                         else:
                             ignoreTagContent = True
+                    else:
+                        someTag = Tag(None)
 
 
         # split loops so if's evaluated less times
