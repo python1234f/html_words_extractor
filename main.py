@@ -69,11 +69,14 @@ class Tag:
             self.position = 0
 
     def handle_letter_unknown_tag(self, letter):
+
         if letter == " ":
             # dont append to tagType anymore (class=,id= etc.)
             self.appendTagType = False
         if not self.appendTagType:
             return
+        if letter == "b":
+            print(1)
         if not self.openingTagClosed:
             self.tagType += letter
         else:
@@ -161,7 +164,7 @@ class Extractor:
 
         for index in range(index, len(self.html)):
             if index == 73727:
-                print(1)
+                pass
             letter = self.html[index]
 
             if ignoreTagContent:
@@ -171,9 +174,9 @@ class Extractor:
                     if letter != "<":
                         continue
                     else:
-                        print(1)
+                        pass
                 else:
-                    print(1)
+                    pass
 
             if not tagOpen:
                 if letter == "<":
@@ -206,6 +209,9 @@ class Extractor:
                     someTag.handle_letter_unknown_tag(letter)
                     continue
                 else:
+                    if someTag.tagType == 'body':
+                        # finished :)
+                        break
                     someTag.openingTagClosed = True
                     tagOpen = False
                     tagOpenIndex = 0
@@ -221,6 +227,7 @@ class Extractor:
                     else:
                         someTag = Tag(None)
 
+        
 
         # split loops so if's evaluated less times
 
