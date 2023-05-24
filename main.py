@@ -177,8 +177,7 @@ class Extractor:
         word = ""
 
         for index in range(index, len(self.html)):
-            if index == 73727:
-                pass
+
             letter = self.html[index]
 
             if ignoreTagContent:
