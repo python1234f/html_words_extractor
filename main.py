@@ -33,9 +33,17 @@ Assumptions:
     it is assumed that for excluded tags, such tag will never have a nested child of the same type,
     e.g. no <style> inside of <style>
 
+    it is assumed that body tag is present
+
+    tests are written without any library, as it would be redundant where the main objective is to test the
+    correctness of the algorithm, also I have limited time
+
+    No refactoring has been done
+
 """
 import requests
-
+from datetime import datetime
+from sys import argv
 
 class Tag:
 
@@ -62,7 +70,7 @@ class Tag:
     def handle_letter(self, letter):
         if letter == self.tagType[self.position]:
             self.position += 1
-            if self.position == len(self.tagType):
+            if self.position == len(self.tagType.strip()):
                 self.close_tag()
         else:
             # if other than next expected letter, reset position
@@ -75,14 +83,10 @@ class Tag:
             self.appendTagType = False
         if not self.appendTagType:
             return
-        if letter == "b":
-            print(1)
         if not self.openingTagClosed:
             self.tagType += letter
         else:
             self.consideredTagType += letter
-        if self.consideredTagType == "div":
-            print(1)
 
     def close_tag(self):
         if not self.openingTagClosed:
@@ -94,20 +98,24 @@ class Tag:
     def __repr__(self):
         return f"{self.tagType}"
 
+
 class Extractor:
 
     excluded_tags = ["script", "style"]
 
-    def __init__(self, url):
+    def __init__(self, url, html=None):
 
         self.html = None
         self.url = url
-        self.load_html()
+        if not html:
+            self.load_html()
+        else:
+            self.html = html
         self.body_tag = Tag("body ")
         self.current_child_tag = None
         self.words = {}
 
-    def add_word(self, word):
+    def add_word_old(self, word):
         insert_pointer = self.words
         for index in range(len(word)):
             letter = word[index]
@@ -120,10 +128,16 @@ class Extractor:
                 else:
                     insert_pointer["count"] += 1
 
+    def add_word(self, word):
+        if word in self.words:
+            self.words[word] += 1
+        else:
+            self.words[word] = 1
+
     def load_html(self):
-        # self.html = requests.get(self.url).text
-        with open('mock_data') as f:
-            self.html = f.read()
+        self.html = requests.get(self.url).text
+        # with open('mock_data') as f:
+        #     self.html = f.read()
 
     def run(self):
 
@@ -227,24 +241,18 @@ class Extractor:
                     else:
                         someTag = Tag(None)
 
-        
 
-        # split loops so if's evaluated less times
+if __name__ == "__main__":
 
+    url = argv[1]
+    extractor = Extractor(url)
+    start = datetime.now()
+    extractor.run()
+    print(datetime.now() - start)
+    words = extractor.words
+    top_ten = {key: extractor.words[key] for key in reversed(sorted(extractor.words, key=extractor.words.get)[-10:])}
+    top_ten = "".join([f"{word}: {count}\n" for word, count in top_ten.items()])
+    print(top_ten)
+    with open('results.txt', 'w') as f:
+        f.write(top_ten)
 
-
-extractor = Extractor("https://onet.pl")
-extractor.run()
-
-tests("<>")
-tests("<<>")
-tests("<>>")
-
-tests("<\>")
-tests("< >")
-tests("< \>")
-tests("<\    >")
-tests("<a    >")
-tests("< a    >")
-tests("< a class=\"dsadsaads\"   >")
-tests("<a class=\"dsadsaads\"   >")
