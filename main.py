@@ -166,15 +166,11 @@ class Extractor:
                     if self.body_tag.position == 0:
                         isNotBodyTag = True
 
-
         # We are within the body. We can start stripping other tags now.
         someTag = Tag(None)
         tagOpen = False
         tagOpenIndex = None
         ignoreTagContent = False
-
-        words = {}
-        word = ""
 
         for index in range(index, len(self.html)):
 
